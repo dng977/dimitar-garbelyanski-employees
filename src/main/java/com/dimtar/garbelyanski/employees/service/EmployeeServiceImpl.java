@@ -109,10 +109,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 projectHistories.add(projectHistoryBuilder.build());
 
             } catch (DateTimeParseException e) {
-                log.error("Bad date format", e);
+                log.info("Bad date format");
                 throw new BadCsvFormatException("Bad date format: " + line.get(2) + "!");
             }catch (Exception e){
-                log.error("Bad format", e );
+                log.info("Bad format", e);
                 throw new BadCsvFormatException("Invalid format!");
 
             }
