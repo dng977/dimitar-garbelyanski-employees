@@ -1,12 +1,15 @@
 package com.dimtar.garbelyanski.employees.util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class FileUtil {
-    public static List<List<String>> scanProjectsData(InputStream fileInputStream){
+    public static List<List<String>> scanProjectsData(InputStream fileInputStream) throws IOException {
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream))) {
             String line;
@@ -14,8 +17,6 @@ public class FileUtil {
                 String[] values = line.split(",");
                 records.add(Arrays.stream(values).map(String::strip).toList());
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return records;
     }

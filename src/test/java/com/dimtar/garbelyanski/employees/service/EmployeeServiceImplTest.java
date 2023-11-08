@@ -1,28 +1,13 @@
 package com.dimtar.garbelyanski.employees.service;
 
-import com.dimtar.garbelyanski.employees.config.WebConfig;
-import com.dimtar.garbelyanski.employees.controller.EmployeesController;
 import com.dimtar.garbelyanski.employees.dto.WorkTogetherRecord;
 import com.dimtar.garbelyanski.employees.exception.BadCsvFormatException;
 import com.dimtar.garbelyanski.employees.model.EmployeeWorkRecord;
-import org.hibernate.jdbc.Work;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -30,9 +15,8 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -49,33 +33,23 @@ class EmployeeServiceImplTest {
                 1L,
                 1L,
                 LocalDate.of(2020, Month.APRIL,1),
-                LocalDate.of(2020, Month.OCTOBER,1)));
+                LocalDate.of(2020, Month.APRIL,15)));
         employeeWorkRecords.add(new EmployeeWorkRecord(
                 2L,
                 1L,
-                LocalDate.of(2020, Month.APRIL,1),
-                LocalDate.of(2020, Month.OCTOBER,1)));
+                LocalDate.of(2020, Month.APRIL,10),
+                LocalDate.of(2020, Month.APRIL,15)));
         employeeWorkRecords.add(new EmployeeWorkRecord(
                 3L,
                 1L,
                 LocalDate.of(2019, Month.APRIL,1),
                 LocalDate.of(2021, Month.OCTOBER,1)));
-        employeeWorkRecords.add(new EmployeeWorkRecord(
-                2L,
-                2L,
-                LocalDate.of(2020, Month.APRIL,1),
-                LocalDate.of(2020, Month.APRIL,15)));
-        employeeWorkRecords.add(new EmployeeWorkRecord(
-                3L,
-                2L,
-                LocalDate.of(2020, Month.APRIL,11),
-                LocalDate.of(2020, Month.APRIL,30)));
 
         List<WorkTogetherRecord> workTogetherRecords = employeeService.getEmployeesWorkedTogether(employeeWorkRecords);
 
-        for (WorkTogetherRecord record: workTogetherRecords){
-            System.out.println(record);
-        }
+        assertEquals(3, workTogetherRecords.size());
+        assertEquals(15, workTogetherRecords.get(0).getDaysWorked());
+        assertEquals(6, workTogetherRecords.get(1).getDaysWorked());
     }
 
     @Test
@@ -86,18 +60,37 @@ class EmployeeServiceImplTest {
                 "hello.csv",
                 MediaType.TEXT_PLAIN_VALUE,
                 """
-                        143, 12, 2013-11-01, 2014-01-05
-                        218, 10, 16-05-2012, NULL
-                        143, 10, 01/01/2009, 2015-04-27
+                        143, 12, 2013-11-01, 15-11-2013
+                        218, 10, 16/05/12, NULL
+                        143, 10, 16/05/2012, 25-05-12
                         """.getBytes()
         );
 
 
         List<WorkTogetherRecord> workTogetherRecords = employeeService.getEmployeesWorkedTogether(file);
 
-        for (WorkTogetherRecord record: workTogetherRecords){
-            System.out.println(record);
-        }
+        assertEquals(1,workTogetherRecords.size());
+        assertEquals(10,workTogetherRecords.get(0).getDaysWorked());
+    }
+
+
+    @Test
+    void getEmployeesWorkedTogetherCSVBadDateFormat() {
+        MockMultipartFile file
+                = new MockMultipartFile(
+                "file",
+                "hello.csv",
+                MediaType.TEXT_PLAIN_VALUE,
+                """
+                        143, 12, 2013-11-01, 15-11-20135
+                        218, 10, 55/05/12, NULL
+                        143, 10, 16/05/2012, 25-05-12
+                        """.getBytes()
+        );
+
+
+        assertThrows(BadCsvFormatException.class, () -> employeeService.getEmployeesWorkedTogether(file));
+
     }
 
 

@@ -25,6 +25,7 @@ export const EmployeesView = () => {
     hiddenFileInput.current?.files &&
       setUploadedFileName(hiddenFileInput.current.files[0].name);
     setCsvFile(e.target.files[0]);
+    setError(null);
   }
 
   function onGetData(event: any): void {
@@ -38,9 +39,10 @@ export const EmployeesView = () => {
         },
         body: formData
       })
-        .then(response => response.json()).then(data => setData(data)).catch(err => {
-          console.error(err);
-          setError(err.message)
+        .then(response => {
+          response.ok ? 
+            response.json().then(data => setData(data)) :
+            response.text().then(errMessage => setError(errMessage));
         })
     }
   }

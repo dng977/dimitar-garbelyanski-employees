@@ -2,7 +2,6 @@ package com.dimtar.garbelyanski.employees.service;
 
 import com.dimtar.garbelyanski.employees.dto.WorkTogetherRecord;
 import com.dimtar.garbelyanski.employees.exception.BadCsvFormatException;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
