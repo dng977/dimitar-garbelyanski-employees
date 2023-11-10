@@ -2,6 +2,9 @@ package com.dimtar.garbelyanski.employees.controller;
 
 import com.dimtar.garbelyanski.employees.dto.WorkTogetherRecord;
 import com.dimtar.garbelyanski.employees.exception.BadCsvFormatException;
+import com.dimtar.garbelyanski.employees.exception.BadFormatException;
+import com.dimtar.garbelyanski.employees.model.CsvDataSource;
+import com.dimtar.garbelyanski.employees.model.DataSource;
 import com.dimtar.garbelyanski.employees.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +24,7 @@ public class EmployeesController {
         this.employeeService = employeeService;
     }
 
-    @ExceptionHandler(BadCsvFormatException.class)
+    @ExceptionHandler(BadFormatException.class)
     public ResponseEntity<String> handleBadFormat(BadCsvFormatException e){
         return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -32,8 +35,10 @@ public class EmployeesController {
     }
 
     @RequestMapping(method = RequestMethod.POST,path = "/worked-together")
-    public ResponseEntity<List<WorkTogetherRecord>> postWorkedTogetherEmployees(@RequestParam(value = "file")MultipartFile file) throws BadCsvFormatException, IOException {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(this.employeeService.getEmployeesWorkedTogether(file));
+    public ResponseEntity<List<WorkTogetherRecord>> postWorkedTogetherEmployeesFromCSV(@RequestParam(value = "file")MultipartFile csvFile) throws BadFormatException, IOException {
+        DataSource dataSource = new CsvDataSource(csvFile);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                    .body(this.employeeService.getEmployeesWorkedTogetherFromCSV(dataSource));
     }
 }
